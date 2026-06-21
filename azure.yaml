@@ -1,0 +1,15 @@
+name: azure-shop-demo
+metadata:
+  template: azure-shop-demo@0.0.1
+services:
+  web:
+    project: ./web
+    language: js
+    host: appservice
+  api:
+    project: ./functions
+    language: js
+    host: function
+infra:
+  provider: bicep
+  path: infra

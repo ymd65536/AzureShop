@@ -1,0 +1,12 @@
+{
+  "name": "azure-shop-functions",
+  "version": "1.0.0",
+  "description": "Azure Functions for Azure Shop demo",
+  "main": "src/functions.js",
+  "scripts": {
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0"
+  }
+}

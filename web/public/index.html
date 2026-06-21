@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Azure Shop Demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Azure Demo</p>
+        <h1>Azure Shop Demo</h1>
+        <p>App Service / Azure SQL / Azure Functions / Monitor を組み合わせた架空ショッピングサイトです。</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="products" id="products"></section>
+
+      <section class="checkout-card">
+        <h2>注文フォーム</h2>
+        <form id="checkout-form">
+          <label>
+            お名前
+            <input name="customerName" placeholder="Azure 太郎" required />
+          </label>
+          <label>
+            メールアドレス
+            <input name="email" type="email" placeholder="azure@example.com" required />
+          </label>
+          <label>
+            お届け先
+            <textarea name="address" rows="3" placeholder="東京スカイツリー"></textarea>
+          </label>
+          <button type="submit">注文する</button>
+        </form>
+        <p id="result" class="result"></p>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
