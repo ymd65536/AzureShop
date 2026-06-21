@@ -5,11 +5,7 @@ services:
   web:
     project: ./web
     language: js
-    host: appservice
-  api:
-    project: ./functions
-    language: js
-    host: function
+    host: staticwebapp
 infra:
   provider: bicep
   path: infra

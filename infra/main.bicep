@@ -1,165 +1,89 @@
 targetScope = 'resourceGroup'
 
-@description('Location for all resources.')
-param location string = resourceGroup().location
+@description('Azure region for the demo resources. Use a region with available quota, such as eastus2 or westus2.')
+param location string = 'eastus2'
 
-@description('Name of the App Service plan')
-param appServicePlanName string = 'asp-azure-shop-demo'
+@description('Name of the web service resource for azd')
+param webServiceName string = 'stapp-azure-shop-demo'
 
-@description('Name of the web app')
-param webAppName string = 'app-azure-shop-demo'
+@description('Name of the Cosmos DB account')
+param cosmosAccountName string = 'cosmosazureshopdemo20260622'
 
-@description('Name of the Function App')
-param functionAppName string = 'func-azure-shop-demo'
+@description('Name of the Cosmos DB database')
+param cosmosDatabaseName string = 'shopdb'
 
-@description('Name of the SQL server')
-param sqlServerName string = 'sql-azure-shop-demo'
+@description('Name of the Cosmos DB container')
+param cosmosContainerName string = 'orders'
 
-@description('Name of the SQL database')
-param sqlDatabaseName string = 'sqldb-azure-shop-demo'
-
-@description('Name of Application Insights')
-param appInsightsName string = 'appi-azure-shop-demo'
-
-@description('Name of Log Analytics workspace')
-param logAnalyticsName string = 'log-azure-shop-demo'
-
-@description('Name of Automation account')
-param automationAccountName string = 'aa-azure-shop-demo'
-
-@description('Admin login for SQL Server')
-param sqlAdminLogin string = 'sqladminuser'
-
-@secure()
-@description('Admin password for SQL Server')
-param sqlAdminPassword string
-
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: appServicePlanName
+resource webResource 'Microsoft.Web/staticSites@2023-12-01' = {
+  name: webServiceName
   location: location
+  tags: {
+    'azd-service-name': 'web'
+  }
   sku: {
-    name: 'B1'
-    tier: 'Basic'
+    name: 'Free'
+    tier: 'Free'
   }
-}
-
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: logAnalyticsName
-  location: location
   properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-  }
-}
-
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightsName
-  location: location
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    WorkspaceResourceId: logAnalyticsWorkspace.id
-    Flow_Type: 'Bluefield'
-    Request_Source: 'rest'
-  }
-}
-
-resource webApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: webAppName
-  location: location
-  properties: {
-    serverFarmId: appServicePlan.id
-    httpsOnly: true
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
-        }
-      ]
+    repositoryUrl: 'https://github.com/Azure/azure-quickstart-templates'
+    branch: 'master'
+    buildProperties: {
+      appLocation: '/'
+      outputLocation: ''
     }
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: functionAppName
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
+  name: cosmosAccountName
   location: location
-  kind: 'functionapp'
+  kind: 'GlobalDocumentDB'
   properties: {
-    serverFarmId: appServicePlan.id
-    httpsOnly: true
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'node'
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~20'
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
-        }
-      ]
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+    capabilities: [
+      {
+        name: 'EnableServerless'
+      }
+    ]
+  }
+}
+
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
+  parent: cosmosAccount
+  name: cosmosDatabaseName
+  properties: {
+    resource: {
+      id: cosmosDatabaseName
     }
   }
 }
 
-resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
-  name: sqlServerName
-  location: location
+resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: cosmosDatabase
+  name: cosmosContainerName
   properties: {
-    administratorLogin: sqlAdminLogin
-    administratorLoginPassword: sqlAdminPassword
-    minimalTlsVersion: '1.2'
-  }
-}
-
-resource sqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
-  name: '${sqlServer.name}/${sqlDatabaseName}'
-  location: location
-  sku: {
-    name: 'Basic'
-    tier: 'Basic'
-  }
-  properties: {
-    collation: 'SQL_Latin1_General_CP1_CI_AS'
-  }
-}
-
-resource sqlFirewall 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
-  name: '${sqlServer.name}/AllowAzureServices'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
-  }
-}
-
-resource automationAccount 'Microsoft.Automation/automationAccounts@2023-11-01' = {
-  name: automationAccountName
-  location: location
-  properties: {
-    sku: {
-      name: 'Basic'
+    resource: {
+      id: cosmosContainerName
+      partitionKey: {
+        paths: [
+          '/customerId'
+        ]
+        kind: 'Hash'
+      }
     }
   }
 }
 
-output webAppUrl string = 'https://${webApp.properties.defaultHostName}'
-output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'
+output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
+output webUrl string = 'https://${webResource.properties.defaultHostname}'

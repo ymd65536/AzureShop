@@ -1,38 +1,53 @@
 # Azure Shop Demo
 
-このリポジトリは、Azure App Service、Azure SQL Database、Azure Functions、Azure Monitor、Application Insights、Azure Automation を組み合わせた架空のショッピングサイトのデモ用サンプルです。
+このリポジトリは、Cosmos DB を中心にした架空のショッピングサイトのデモ用サンプルです。現在の構成では、ローカルの Web サイトを起動しつつ、Azure 側では Cosmos DB を作成できるようにしています。
 
-## 構成
+## 現在の構成
 
-- Web UI: Azure App Service
-- API/注文処理: Azure Functions
-- データストア: Azure SQL Database
-- 監視: Azure Monitor + Application Insights
-- 運用自動化: Azure Automation
+- フロントエンド: ローカル Node.js サーバーで動作する静的なショッピングサイト
+- データストア: Azure Cosmos DB
+- デプロイ基盤: Azure Developer CLI (azd) + Bicep
 
 ## 主要ファイル
 
 - [azure.yaml](azure.yaml): Azure Developer CLI の構成
-- [web/server.js](web/server.js): シンプルな Web アプリケーション
-- [functions/src/functions.js](functions/src/functions.js): Azure Functions のサンプル
+- [web/server.js](web/server.js): ローカル Web アプリケーション
+- [web/public/index.html](web/public/index.html): ショッピングサイトの画面
 - [infra/main.bicep](infra/main.bicep): Azure リソースの IaC 定義
 
-## 使い方
+## ローカルでの実行
+
+```bash
+cd web
+npm install
+node server.js
+```
+
+ブラウザで以下を開きます。
+
+```text
+http://127.0.0.1:8080
+```
+
+## Azure へのデプロイ
 
 1. Azure CLI / Azure Developer CLI をインストールします。
 2. Azure にログインします。
-3. 次のコマンドでリソースをデプロイします。
+3. SQL 管理者パスワードを入力しながら、次のコマンドでデプロイします。
+   パスワードは、8 文字以上で大文字・小文字・数字・記号を含むものを使用してください。
 
 ```bash
 azd auth login
 azd up
 ```
 
-## 監視・運用のポイント
+例: `SqlDemo!2026A` のような強いパスワードを使用してください。長さ 8 文字以上で、大文字・小文字・数字・記号を含む値を使ってください。
 
-- Application Insights で Web/API のトレースと依存関係を確認する
-- Azure Monitor でメトリックとアラートを設定する
-- Azure Automation で定期的な運用タスクを自動化する
+## 注意事項
+
+- 現在の構成では App Service / Static Web Apps / Functions は含めていません。
+- Cosmos DB の作成時には、サブスクリプションのリージョン制約と、アカウント名の一意性に注意してください。必要に応じて、リージョンを eastus2 など Static Web Apps が対応している地域に変更してください。
+- 追加で監視や運用の要素を入れる場合は、後続で Application Insights や Azure Monitor を追加できます。
 
 ## Azure Developer CLIのセットアップ
 
