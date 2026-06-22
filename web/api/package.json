@@ -1,0 +1,10 @@
+{
+  "name": "azure-shop-api",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "@azure/cosmos": "^4.9.3",
+    "mssql": "^11.0.1"
+  }
+}

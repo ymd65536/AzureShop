@@ -8,29 +8,39 @@
   </head>
   <body>
     <header class="hero">
-      <div>
+      <div class="hero-content">
         <p class="eyebrow">Azure Demo</p>
         <h1>Azure Shop Demo</h1>
-        <p>App Service / Azure SQL / Azure Functions / Monitor を組み合わせた架空ショッピングサイトです。</p>
+        <p>限定アイテムを選んで、すぐにお届け先を入力して注文できます。</p>
+        <div class="hero-badges">
+          <span>送料無料</span>
+          <span>翌日配送</span>
+          <span>安心返品</span>
+        </div>
       </div>
     </header>
 
     <main>
-      <section class="review-strip">
-        <div class="review-pill">⭐ 4.9/5</div>
-        <div class="review-pill">📦 1,200件以上のレビュー</div>
-        <div class="review-pill">⚡ 24時間以内発送</div>
+      <section class="shop-intro">
+        <div>
+          <p class="section-label">おすすめ商品</p>
+          <h2>気になるアイテムを選んで、カートへ。</h2>
+        </div>
+        <p class="intro-copy">お買い物はシンプル。商品を選び、数量を調整して、最後にお届け先を入力するだけです。</p>
       </section>
 
       <section class="products" id="products"></section>
 
-      <section class="checkout-card cart-card">
+      <section class="checkout-card cart-card" id="cart-section">
         <div class="cart-header">
           <h2>カート</h2>
           <span id="cart-count">0点</span>
         </div>
         <div id="cart-items" class="cart-items">
-          <p class="empty-state">商品を選んでください。</p>
+          <div class="empty-state">
+            <strong>まだ商品が入っていません</strong>
+            <p>気になるアイテムを選んでください。</p>
+          </div>
         </div>
         <div class="cart-summary">
           <strong>合計: <span id="cart-total">¥0</span></strong>

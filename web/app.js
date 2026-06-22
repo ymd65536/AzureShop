@@ -5,6 +5,17 @@ function formatPrice(value) {
   return `¥${Number(value || 0).toLocaleString('ja-JP')}`;
 }
 
+function updateCartQuantity(productId, delta) {
+  const target = cart.find((item) => String(item.product.id) === String(productId));
+  if (!target) return;
+
+  target.quantity += delta;
+  if (target.quantity <= 0) {
+    cart = cart.filter((item) => String(item.product.id) !== String(productId));
+  }
+  renderCart();
+}
+
 function renderCart() {
   const cartItems = document.getElementById('cart-items');
   const cartCount = document.getElementById('cart-count');
@@ -12,7 +23,12 @@ function renderCart() {
   const checkoutSection = document.getElementById('checkout-section');
 
   if (cart.length === 0) {
-    cartItems.innerHTML = '<p class="empty-state">商品を選んでください。</p>';
+    cartItems.innerHTML = `
+      <div class="empty-state">
+        <strong>まだ商品が入っていません</strong>
+        <p>気になるアイテムを選んでください。</p>
+      </div>
+    `;
     cartCount.textContent = '0点';
     cartTotal.textContent = formatPrice(0);
     checkoutSection.classList.add('hidden');
@@ -29,8 +45,12 @@ function renderCart() {
         <p>${item.product.description}</p>
       </div>
       <div class="cart-item-meta">
-        <span>${item.quantity}点</span>
-        <strong>${formatPrice((Number(item.product.price || 0) * item.quantity))}</strong>
+        <div class="quantity-controls">
+          <button class="qty-btn" data-product-id="${item.product.id}" data-delta="-1" type="button">−</button>
+          <span>${item.quantity}</span>
+          <button class="qty-btn" data-product-id="${item.product.id}" data-delta="1" type="button">＋</button>
+        </div>
+        <strong>${formatPrice(Number(item.product.price || 0) * item.quantity)}</strong>
         <button class="remove-item" data-product-id="${item.product.id}" type="button">削除</button>
       </div>
     </div>
@@ -40,11 +60,15 @@ function renderCart() {
   cartTotal.textContent = formatPrice(totalAmount);
   checkoutSection.classList.remove('hidden');
 
+  document.querySelectorAll('.qty-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      updateCartQuantity(button.dataset.productId, Number(button.dataset.delta));
+    });
+  });
+
   document.querySelectorAll('.remove-item').forEach((button) => {
     button.addEventListener('click', () => {
-      const id = button.dataset.productId;
-      cart = cart.filter((item) => String(item.product.id) !== String(id));
-      renderCart();
+      updateCartQuantity(button.dataset.productId, -999);
     });
   });
 }
@@ -56,6 +80,7 @@ function addToCart(product) {
   } else {
     cart.push({ product, quantity: 1 });
   }
+  document.getElementById('cart-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   renderCart();
 }
 
@@ -65,20 +90,23 @@ async function loadProducts() {
   const container = document.getElementById('products');
   productsCache = products;
 
-  container.innerHTML = products.map((product) => `
-    <article class="card">
-      <div class="product-meta">
-        <span class="product-badge">人気</span>
-        <span class="product-rating">★ 4.8</span>
-      </div>
-      <h3>${product.name}</h3>
-      <p>${product.description}</p>
-      <div class="product-price-row">
-        <strong>${formatPrice(product.price)}</strong>
-        <button class="add-to-cart" type="button" data-product-id="${product.id}">カートに入れる</button>
-      </div>
-    </article>
-  `).join('');
+  container.innerHTML = products.map((product) => {
+    const badge = product.id === 1 ? '人気' : product.id === 2 ? '定番' : '新作';
+    return `
+      <article class="card">
+        <div class="product-top">
+          <span class="product-badge">${badge}</span>
+          <span class="product-stock">在庫あり</span>
+        </div>
+        <h3>${product.name}</h3>
+        <p>${product.description}</p>
+        <div class="product-price-row">
+          <strong>${formatPrice(product.price)}</strong>
+          <button class="add-to-cart" type="button" data-product-id="${product.id}">カートに入れる</button>
+        </div>
+      </article>
+    `;
+  }).join('');
 
   document.querySelectorAll('.add-to-cart').forEach((button) => {
     button.addEventListener('click', () => {

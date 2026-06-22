@@ -22,14 +22,15 @@ resource webResource 'Microsoft.Web/staticSites@2023-12-01' = {
     'azd-service-name': 'web'
   }
   sku: {
-    name: 'Free'
-    tier: 'Free'
+    name: 'Standard'
+    tier: 'Standard'
   }
   properties: {
     repositoryUrl: 'https://github.com/Azure/azure-quickstart-templates'
     branch: 'master'
     buildProperties: {
       appLocation: '/'
+      apiLocation: '/api'
       outputLocation: ''
     }
   }
