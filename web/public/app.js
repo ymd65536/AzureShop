@@ -1,5 +1,6 @@
 let cart = [];
 let productsCache = [];
+const API_BASE_URL = 'https://azshopfuncdemo1782073070.azurewebsites.net/api';
 
 function formatPrice(value) {
   return `¥${Number(value || 0).toLocaleString('ja-JP')}`;
@@ -60,7 +61,7 @@ function addToCart(product) {
 }
 
 async function loadProducts() {
-  const response = await fetch('/api/products');
+  const response = await fetch(`${API_BASE_URL}/products`);
   const products = await response.json();
   const container = document.getElementById('products');
   productsCache = products;
@@ -91,7 +92,7 @@ async function loadProducts() {
 }
 
 async function loadOrders() {
-  const response = await fetch('/api/orders');
+  const response = await fetch(`${API_BASE_URL}/orders`);
   const orders = await response.json();
   const container = document.getElementById('orders');
 
@@ -190,7 +191,7 @@ async function handleSubmit(event) {
   document.getElementById('result').innerHTML = '<strong>注文を送信しています…</strong> 少しお待ちください。';
 
   try {
-    const response = await fetch('/api/checkout', {
+    const response = await fetch(`${API_BASE_URL}/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
